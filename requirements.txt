@@ -1,1 +1,4 @@
-beautifulsoup4, requests, mongo (se heartbeat)
+# beautifulsoup4
+# urllib3
+MongoEngine
+prospector[with_mypy, with_vulture] # Linter

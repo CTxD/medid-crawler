@@ -1,0 +1,20 @@
+pylint:
+  disable:
+    - mixed-line-endings
+    - multiple-imports
+    - logging-fstring-interpolation
+
+pep8:
+  full: true
+  options:
+    max-line-length: 100
+  disable:
+    - W293
+    - W391   
+
+# Optional tools to be used:
+mypy:
+  run: true
+
+vulture:
+  run: true
