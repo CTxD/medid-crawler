@@ -1,0 +1,4 @@
+-r requirements/common  # All common dependencies
+
+# Development specific requirements:
+prospector[with_mypy]   # Linter

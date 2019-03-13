@@ -15,6 +15,3 @@ pep8:
 # Optional tools to be used:
 mypy:
   run: true
-
-vulture:
-  run: true
