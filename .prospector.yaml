@@ -9,9 +9,16 @@ pep8:
   options:
     max-line-length: 100
   disable:
+    - E261
+    - W291
+    - W292
     - W293
     - W391   
 
 # Optional tools to be used:
 mypy:
   run: true
+  options:
+    # Pylint already complaints about import of non-installed modules, so there's no need for
+    # mypy to do this aswell.
+    ignore-missing-imports: true
