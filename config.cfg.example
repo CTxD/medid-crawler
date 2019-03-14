@@ -27,7 +27,7 @@
 [ENVIRONMENT]
 # Defines the execution environment. Influences which database is targeted, etc.
 # Accepted values are DEV and PROD
-ENVIRONMENT     = DEV
+ENVIRONMENT     = PROD
 
 # Verbose influences degree of terminal output during execution
 VERBOSE         = false

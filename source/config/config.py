@@ -1,7 +1,6 @@
 import logging
 import re
 import os
-import json
 
 from configparser import ConfigParser
 from typing import Union, List, Any
@@ -13,12 +12,16 @@ logger = logging.getLogger(__name__)
 class CONFIGDICT(dict):
     """This is a config dict wrapper"""
     pass
-
+        
 
 CONFIG: CONFIGDICT = CONFIGDICT()
 
 
 def readconfig(filepath: str) -> None:
+    # Make sure we don't accidentally read configruations multiple times
+    if CONFIG:
+        return
+
     if not os.path.exists(filepath):
         logger.critical(f'No config file exists with the name/path {filepath}. Process terminated.')
         exit()

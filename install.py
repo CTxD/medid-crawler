@@ -1,6 +1,6 @@
 import subprocess
 
-from sys import argv, executable
+from sys import executable
 from typing import List, Dict
 
 from source.config import readconfig, CONFIG
@@ -35,15 +35,18 @@ def getinstalledpackages() -> Dict[str, str]:
     }
 
 
-def install():
-    # Check if dependencies are installed according to the ENVIRONMENT defined in the config.cfg.
-    requirements: List[str] = getuninstalledrequirements(CONFIG['REQPATH'])
+def install(requirements: List[str] = None):
+    # If we run install.py directly, we have to populate the CONFIG dict.
+    if not CONFIG:
+        readconfig('config.cfg')
+
+    if requirements is None:
+        # Check if dependencies are installed according to the ENVIRONMENT defined in the config.cfg
+        requirements = getuninstalledrequirements(CONFIG['REQPATH'])
+    
     for req in requirements:
         subprocess.check_output([executable, '-m', 'pip', 'install', req])
 
 
 if __name__ == '__main__':
-    # If we run install directly, we make sure to populate the CONFIG dict
-    readconfig('config.cfg')
-
     install()
