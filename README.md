@@ -34,6 +34,15 @@ python main.py [-I]
 
 -I flag is optional. If specified, all (unresolved) dependencies will be installed on startup.
 
+# Tests
+Tests are run by the following command:
+```bash
+python -m unittest
+``` 
+
+As long as tests follow the naming convention (test_ prefix) they are run.
+
+See [Tests README](source/tests/README.md) for specific notes about testing
 
 ## Some notes on linting
 Prospector is used for linting, using all default tools as well as the addition of mypy and vulture. mypy checks for type inconsistencies, and vulture checks for unused variables, functions, and methods.
