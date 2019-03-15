@@ -4,5 +4,5 @@ import unittest
 
 
 class TestExample(unittest.TestCase):
-    def test_example(self):
+    def test_example_add_1_and_2(self):
         self.assertEqual(1 + 2, 3)
