@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 from sys import executable
 from typing import List, Dict
@@ -17,7 +18,9 @@ def getrequirements(filepath: str) -> List[str]:
 
             if line.startswith('-r'):
                 dependency = line.split()[1]
-                requirements.extend(getrequirements(dependency))
+                requirements.extend(
+                    getrequirements(os.path.join(os.path.dirname(filepath), dependency))
+                )
                 continue
             
             requirements.append(line)
@@ -25,7 +28,12 @@ def getrequirements(filepath: str) -> List[str]:
 
 
 def getuninstalledrequirements(filepath: str) -> List[str]:
-    return [req for req in getrequirements(filepath) if req.lower() not in getinstalledpackages()]
+    result: List[str] = []
+    installedpackages = getinstalledpackages()
+    for requirement in getrequirements(filepath):
+        if requirement.lower().split('[')[0] not in installedpackages:
+            result.append(requirement)
+    return result
 
 
 def getinstalledpackages() -> Dict[str, str]:
@@ -44,8 +52,14 @@ def install(requirements: List[str] = None):
         # Check if dependencies are installed according to the ENVIRONMENT defined in the config.cfg
         requirements = getuninstalledrequirements(CONFIG['REQPATH'])
     
+    if not requirements:
+        print('All requirements are already installed.')
+
     for req in requirements:
-        subprocess.check_output([executable, '-m', 'pip', 'install', req])
+        try:
+            subprocess.check_call([executable, '-m', 'pip', 'install', req])
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 # All common requirements for the project:
-# beautifulsoup4
 # urllib3
+beautifulsoup4
+requests
 MongoEngine

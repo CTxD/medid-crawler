@@ -1,6 +1,5 @@
--r requirements/common  # All common dependencies
+-r common  # All common dependencies
 
 # Development specific requirements:
 # Linters:
-prospector
-mypy
+prospector[with_mypy]
