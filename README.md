@@ -51,7 +51,7 @@ python -m unittest
 
 As long as tests follow the naming convention (test_ prefix) they are run.
 
-See [Tests README](source/tests/README.md) for specific notes about testing
+See [Tests README](tests/README.md) for specific notes about testing
 
 ### Through make
 ```bash

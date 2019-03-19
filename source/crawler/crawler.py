@@ -9,3 +9,7 @@ def crawl(url: str) -> bs4.BeautifulSoup:
     source = bs4.BeautifulSoup(response.text.encode('utf-8'), 'html.parser')
 
     return source
+
+
+def mult(x, y):
+    return x*y

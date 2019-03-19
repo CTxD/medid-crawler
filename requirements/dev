@@ -3,3 +3,4 @@
 # Development specific requirements:
 # Linters:
 prospector[with_mypy]
+pytest
