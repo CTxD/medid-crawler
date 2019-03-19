@@ -19,10 +19,10 @@ logger = logging.getLogger('source')
 def main():
     if '-I' in sys.argv:
         install()
-
+    
     if not resolvedependencies():
         exit()
-    print('Everything OK!')
+    print('Everything OK!\r\n')
 
     logger.info('Starting application.')
 

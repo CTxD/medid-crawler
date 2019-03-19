@@ -1,5 +1,5 @@
 test:
-	python -m unittest
+	pytest -v
 
 install:
 	python install.py
