@@ -40,23 +40,6 @@ def crawlloop(starttime: int = 0, iterations: int = 0):
             iterationcount += 1
         
         # ### INVOCATION OF CRAWLER ETC GOES HERE! ### #
-        urls = [
-            "http://stackoverflow.com:8080/some/folder?test=/questions/9626535/get-domain-name-from-url",
-            "Stackoverflow.com:8080/some/folder?test=/questions/9626535/get-domain-name-from-url",
-            "http://stackoverflow.com/some/folder?test=/questions/9626535/get-domain-name-from-url",
-            "https://StackOverflow.com:8080?test=/questions/9626535/get-domain-name-from-url",
-            "stackoverflow.com?test=questions&v=get-domain-name-from-url",
-            "http://pro.medicin.dk/Search/Search/SearchAlpha/a",
-            "http://www.pro.medicin.dk/Medicin/Praeparater/4991",
-            "www.google.com/something",
-            "www.google.com"
-        ]
-        for url in urls:
-            print(crawler.getdomain(url))
-        
-        crawler.crawl('someinvalidurl.dk')
-
-        exit()  
 
         # If a max number of iterations has been specified and we have reached that limit, break
         if iterations and iterationcount == iterations:
