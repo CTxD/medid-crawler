@@ -1,6 +1,7 @@
 import logging
 import re
 import os
+import warnings
 
 from configparser import ConfigParser
 from typing import Union, List, Any
@@ -23,8 +24,7 @@ def readconfig(filepath: str) -> None:
         return
 
     if not os.path.exists(filepath):
-        logger.critical(f'No config file exists with the name/path {filepath}. Process terminated.')
-        exit()
+        raise FileNotFoundError(f'No config file exists with the name/path {filepath}.') 
 
     cfg = ConfigParser()
     # Changing the optionxform enables case preservation of keys in configurations.
@@ -40,10 +40,6 @@ def readconfig(filepath: str) -> None:
         storedict = envspecifics if section == 'ENVIRONMENTSPECIFIC' else CONFIG
             
         for key, value in cfg[section].items():
-            if key in storedict:
-                logger.critical(f'Duplicate key in cfg file: {key}. Terminating program.')
-                exit()
-            
             storedict[key] = simplevalueparser(value)
 
     # Manually set values from the ENVIRONMENTSPECIFIC section based on the ENVIRONMENT variable.
@@ -51,12 +47,15 @@ def readconfig(filepath: str) -> None:
         try:
             env = envkey.split('_')[0]
             key = envkey.split('_')[1]
+
         except Exception:
-            logger.warning(f'Key {envkey} is not a valid ENVIRONMENTSPECIFIC key.')
+            warnings.warn(
+                f'Key {envkey} is not a valid ENVIRONMENTSPECIFIC key.'
+            )
             continue
 
         if env not in ('DEV', 'PROD'):
-            logger.warning(
+            warnings.warn(
                 f'Environment specifier {env} is not a valid environment.'
                 'Valid options are DEV and PROD.'
             )
@@ -67,7 +66,7 @@ def readconfig(filepath: str) -> None:
             continue
         
         if key in CONFIG:
-            logger.warning(
+            warnings.warn(
                 f'Key {key} is already specified with value {CONFIG[key]}. '
                 f'Overwriting the value for the environment-specific value {value}.'
             )
@@ -83,7 +82,7 @@ def simplevalueparser(value: str) -> Union[str, bool, int, float, List[Any]]:
     
     # Case: Numbers
     # Match any number, which can be represented as <1> and <1.0>
-    digitre = r'\d+([.]\d+)?'
+    digitre = r'-?\d+([.]\d+)?'
 
     rematch = re.match(digitre, value)
     # Determine if the value is a number. Second check is to filter out IP adresses, for which
@@ -92,7 +91,11 @@ def simplevalueparser(value: str) -> Union[str, bool, int, float, List[Any]]:
         return int(value) if rematch.group(1) is None else float(value)
 
     # Case: List
-    if value[0] == '[' and value[-1] == ']':
+    # Base case for lists:
+    if value == '[]':
+        return []
+
+    if len(value) > 2 and value[0] == '[' and value[-1] == ']':
         result: list = []
         # All values are themselves cast to their respective types by the simplevalueparser
         for listvalue in value[1:-1].split(','):

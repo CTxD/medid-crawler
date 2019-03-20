@@ -7,6 +7,7 @@ from source.crawler import crawler
 from source.common import inttimestamp
 from source.config import CONFIG, readconfig
 
+
 readconfig('config.cfg')
 
 
@@ -39,8 +40,8 @@ def test_complypoliteness_crawled_domain_not_exceeding_politeness():
 
     # _complypoliteness should return a value between 0 and POLITENESS value AND the domain should
     # remain in the _domainlastvisit dict
-    assert crawler._complypoliteness(domain) == CONFIG['POLITENESS'] - delta and \
-        domain in crawler._domainlastvisit
+    assert crawler._complypoliteness(domain) == CONFIG['POLITENESS'] - delta 
+    assert domain in crawler._domainlastvisit
     
 
 def test_complypoliteness_crawled_domain_exceeding_politeness():
@@ -55,8 +56,8 @@ def test_complypoliteness_crawled_domain_exceeding_politeness():
 
     # _complypoliteness should return 0 AND the domain sohuld be removed from the _domainlastvisit 
     # dict
-    assert crawler._complypoliteness(domain) == 0 and \
-        domain not in crawler._domainlastvisit 
+    assert crawler._complypoliteness(domain) == 0 
+    assert domain not in crawler._domainlastvisit 
 
 
 def test_crawl_unavailable_url():
