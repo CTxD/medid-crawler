@@ -9,12 +9,17 @@ workon <environment name>
 ``` 
 
 ## Installing dependencies
-### Through pip
+### Through make (fully automatic)
+```bash
+make install
+``` 
+
+### Through pip (manual)
 ```bash
 pip install -r requirements/<dev|prod>
 ``` 
 
-### Through scripts
+### Through scripts (automatic)
 ```bash
 python install.py
 ``` 
@@ -26,37 +31,36 @@ The latter simply invokes the install function in install.py on startup.
 
 Both of these methods requires a valid config.cfg file to be placed in the project root directory (same level as main.py and install.py).
 
+## Running
 ### Through make
 ```bash
-make install
+make main
 ``` 
 
-## Running
+### Manual
 ```bash
 python main.py [-I]
 ``` 
 
 -I flag is optional. If specified, all (unresolved) dependencies will be installed on startup.
 
+# Tests
 ### Through make
 ```bash
-make main
+make test
 ``` 
 
-# Tests
+### Manual
 Tests are run by the following command:
 ```bash
-python -m unittest
+pytest -v
+OR
+python -m pytest -v
 ``` 
 
 As long as tests follow the naming convention (test_ prefix) they are run.
 
 See [Tests README](tests/README.md) for specific notes about testing
-
-### Through make
-```bash
-make test
-``` 
 
 
 # Some notes on linting

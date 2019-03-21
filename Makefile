@@ -1,5 +1,5 @@
 test:
-	python -m unittest
+	pytest -v --cov=source tests/
 
 install:
 	python install.py
