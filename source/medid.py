@@ -8,10 +8,6 @@ from .config import CONFIG
 logger = logging.getLogger(__name__)
 
 
-def start(starttime: int = 0): # pragma: no cover
-    crawlloop(starttime, 0)
-
-
 def crawlloop(starttime: int = 0, iterations: int = 0):
     """
     Starts the crawling loop.
@@ -25,13 +21,12 @@ def crawlloop(starttime: int = 0, iterations: int = 0):
             If iterations <= 0 the parameter is ignored
             If not specified crawling will run indefinitively
     """
-    now = inttimestamp.intnowstamp()
-
+    delta = starttime - inttimestamp.intnowstamp()
+    
     # Only wait if the starttime supplied is a future timestamp
-    if starttime and starttime >= now:
-        delta = starttime-now
+    if starttime and delta > 0:
         logger.info(f'Starting next iteration in {delta} seconds')
-        time.sleep(starttime-now)
+        time.sleep(delta)
 
     # If a negative number of iterations has been specified we set it to 0 in order to ignore it
     if iterations < 0: # pragma: no cover
@@ -47,7 +42,6 @@ def crawlloop(starttime: int = 0, iterations: int = 0):
     #       and reached. We do this *before* the thread sleeps until next iteration - which, by 
     #       is a period of 14 days. 
     while(True):
-        # Only increment the iterationcount if we have specified a max number of iterations
         if iterations:
             iterationcount += 1
 

@@ -27,7 +27,7 @@ def main():
     logger.info('Starting application.')
 
     # Start the crawling process
-    medid.start()
+    medid.crawlloop()
     
     
 def checkrequirements() -> bool:

@@ -47,7 +47,6 @@ def readconfig(filepath: str) -> None:
         try:
             env = envkey.split('_')[0]
             key = envkey.split('_')[1]
-
         except Exception:
             warnings.warn(
                 f'Key {envkey} is not a valid ENVIRONMENTSPECIFIC key.'
