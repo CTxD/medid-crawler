@@ -1,9 +1,9 @@
 import time
 import logging
 
+from .crawling import process
 from .common import inttimestamp
 from .config import CONFIG
-
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def crawlloop(starttime: int = 0, iterations: int = 0):
         # NOTE! When implemented the tests for medid has to be adjusted to remove the reference to
         # the crawler.process (or whatever name it gets), so that it doesn't run as part of the 
         # tests for medid. E.g. we test crawlloop without actually crawling anything!        
-        # start crawler.process here #
+        # process.start() # Start crawling process
 
         end = inttimestamp.intnowstamp()
         # ########### CRAWLING PROCESS END ############ #

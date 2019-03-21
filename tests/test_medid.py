@@ -4,11 +4,15 @@ import pytest
 
 from source import medid
 from source.config import config
+from source.crawling import process
 
 config.readconfig('config.cfg')
 
 # Set the number of seconds between iterations to 1 second for testing purposes
 config.CONFIG['INTERVAL'] = 1
+
+# Monkey-patch the process to a lambda function which does nothing
+process.start = lambda: None 
 
 
 @pytest.mark.parametrize("test_input, expected", [

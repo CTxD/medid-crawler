@@ -3,7 +3,7 @@ import pytest
 import requests
 import bs4
 
-from source.crawler import crawler
+from source.crawling import crawler
 from source.common import inttimestamp
 from source.config import CONFIG, readconfig
 

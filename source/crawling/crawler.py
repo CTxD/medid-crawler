@@ -1,3 +1,7 @@
+"""
+General crawling functionality.
+"""
+
 import time 
 
 from typing import Dict
@@ -70,6 +74,11 @@ def getdomain(url: str) -> str:
     
 
 def crawl(url: str) -> bs4.BeautifulSoup:
+    """
+    Crawls a url and returns a BeautifulSoup object of the response.
+
+    The caller is responsible for handling exceptions!
+    """
     if not url.startswith('http'):
         url = 'http://' + url
     # Check if the url domain can be crawled again
