@@ -89,4 +89,4 @@
 **/.mypy_cache/
 
 # certificate
-./medid-certificate.json
+*.json
