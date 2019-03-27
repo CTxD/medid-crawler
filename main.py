@@ -6,6 +6,8 @@ from typing import Union
 
 from source import config, medid
 from install import getuninstalledrequirements, install
+from source.common import firestore as firestore
+
 
 # The logger is configured in source/__init__.py, so make sure to import something from source 
 # before getting a logger instance. This way we use that configuration instead of creating a new,
@@ -28,8 +30,8 @@ def main():
 
     # Start the crawling process
     medid.crawlloop()
-    
-    
+
+
 def checkrequirements() -> bool:
     # Are all requirements installed?
     printstatus('Checking requirements')
