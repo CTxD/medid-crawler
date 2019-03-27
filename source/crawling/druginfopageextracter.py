@@ -1,70 +1,75 @@
 from bs4 import BeautifulSoup
 import requests
 
-
-# Gets an soup object and returns a dictionary with active 
-# categories 
-def _whattosearchfor(soup):
-    categories = {
-        "Amning": "Active",
-        "Andre anvendelsesområder": "Active",
-        "Anvendelsesområder": "Active",
-        "Bivirkninger": "Active",
-        "Bloddonor": "Active",
-        "Dispenseringsform": "Active",
-        "Doping": "Active",
-        "Doseringsforslag": "Active",
-        "Egenskaber, håndtering og holdbarhed": "Active",
-        "Farmakodynamik": "Active",
-        "Farmakokinetik": "Active",
-        "Firma": "Active",
-        "Forgiftning": "Active",
-        "Forsigtighedsregler": "Active",
-        "Foto og identifikation": "Active",
-        "Graviditet": "Active",
-        "Hjælpestoffer": "Active",
-        "Indholdsstoffer": "Active",
-        "Instruktioner": "Active",
-        "Interaktioner": "Active",
-        "Kontraindikationer": "Active",
-        "Nedsat leverfunktion": "Active",
-        "Nedsat nyrefunktion": "Active",
-        "Pakninger, priser, tilskud og udlevering": "Active",
-        "Schengen-attest (pillepas)": "Active",
-        "Substitution": "Active",
-        "Tilskud": "Active",
-        "Trafik": "Active",
-        "Typiske alvorlige fejl": "Active"
-    }
-    # for k, v in categories.items():
-    # print("Kay : {0}, Value : {1}".format(k, v))
-    
-    divs = soup.find('div', attrs={'class': 'pro-praeparat-quicklinks-div'})
-    # divs = soup.find('span', attrs={'class': 'nolink'})
-    print(divs)
+# # info body name: 
+# 9 glob-content-header-wrapper phone-content-header-openclose-wrapper
+# 12 glob-floatNone glob-content-header-wrapper phone-content-header-openclose-wrapper
+# 22 glob-floatLeft
+# # info body:
+# glob-floatNone glob-content-section-text phone-content-section-openclose-text 
 
 
-# Gets a soupobject and processes it. The object is  sendt to
-# senddata
-def processedata():
-    print("asd")
- 
+# Input: Soup object.
+# Output: The name of the drug.
+def _get_pill_name(soup):
+    return soup.head.title.text 
 
-# Gets a url and sends it to processedata()
+
+# Input: Soup object.
+# Output: The headline of the information area.
+def _get_information_area_headline(soup):
+    classname = 'glob-floatLeft'
+    for informationarea in soup.find_all('h3', attrs={'class': classname}):
+        headline = informationarea.text
+        print(headline)
+
+
+# Input: soup object.
+# Output: One of the information area bodies.
+def _get_information_area_body(soup):
+    classname = 'glob-floatNone glob-content-section-text phone-content-section-openclose-text'
+    for informationareabody in soup.find_all('div', attrs={'class': classname}):
+        _traverse_children(informationareabody)
+
+
+# Input: div body
+# Output: a list with strings
+def _traverse_children(informationareabody):
+    #  asd = []
+    for child in informationareabody.recursiveChildGenerator():
+        name = getattr(child, "name", None)
+        if name is not None:
+            pass
+            # print(name)
+        elif not child.isspace(): # leaf node, don't print spaces
+            print(child)
+            # asd.append(child)
+    print("--------------------")
+    # print(asd)
+
+
+def _process_data(soup):
+    classname = 'glob-content-header-wrapper phone-content-header-openclose-wrapper'
+    asd = soup.find_all('div', attrs={'class': classname}).h3
+    print(asd)
+
+
+# Gets a url and sends it to processedata() 
 def getdata(url):
     try:
         source = requests.get(url).text
         soup = BeautifulSoup(source, 'html.parser')
-    except:
+    except expression as identifier:
+        pass
         print(url)
+        print("somthing went wrong")
     finally:
-        _whattosearchfor(soup)
+        # _process_data(soup)
+        #_get_information_area_body(soup)
+        _get_information_area_headline(soup)
+        # _get_pill_name(soup)
+        # _whattosearchfor(soup)
         # print(soup)
-
-
-# Gets a soup object and sends it to the backend
-def senddata():
-    print("asd")
 
 
 getdata('http://pro.medicin.dk/Medicin/Praeparater/536')
