@@ -8,7 +8,3 @@ credentials = credentials.Certificate(
 )
 medId = firebase_admin.initialize_app(credentials)
 db = firestore.client()
-
-# EXAMPLES:
-# To add a document to a collection use:
-#
