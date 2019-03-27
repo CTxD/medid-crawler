@@ -65,7 +65,7 @@ def getdata(url):
         print("somthing went wrong")
     finally:
         # _process_data(soup)
-        #_get_information_area_body(soup)
+        # _get_information_area_body(soup)
         _get_information_area_headline(soup)
         # _get_pill_name(soup)
         # _whattosearchfor(soup)
