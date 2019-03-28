@@ -5,3 +5,4 @@
 prospector[with_mypy]
 pytest
 pytest-cov
+httmock
