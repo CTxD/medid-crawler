@@ -37,7 +37,6 @@ def _convert_obj_to_dict(obj):
 
 def add_or_update(collection_id: str, pill_object: pill.PillData):
         temp = _convert_obj_to_dict(pill_object)
-        print(json.dumps(temp, indent=4))
         db.collection(collection_id).document(pill_object.pillname).set(temp)
 
 

@@ -90,3 +90,5 @@
 
 # certificate
 *.json
+
+**/.DS_Store

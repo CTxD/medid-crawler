@@ -4,11 +4,8 @@ import sys
 
 from typing import Union
 
-from source.crawling import pill
 from source import config, medid
 from install import getuninstalledrequirements, install
-from source.common import firestore
-
 
 
 # The logger is configured in source/__init__.py, so make sure to import something from source 
