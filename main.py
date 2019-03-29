@@ -4,9 +4,11 @@ import sys
 
 from typing import Union
 
+from source.crawling import pill
 from source import config, medid
 from install import getuninstalledrequirements, install
 from source.common import firestore
+
 
 
 # The logger is configured in source/__init__.py, so make sure to import something from source 
@@ -19,20 +21,25 @@ logger = logging.getLogger('source')
 
 
 def main():
-    if '-I' in sys.argv:
-        install()
+    # if '-I' in sys.argv:
+    #     install()
+    #
+    # if not resolvedependencies():
+    #     exit()
+    # print('Everything OK!\r\n')
+    #
+    # logger.info('Starting application.')
+    #
+    # # Start the crawling process
+    # medid.crawlloop()
+    pics_1 = pill.PhotoIdentification('Filmovertrukne tabletter  500 mg  (novum)', '/resource/media/37171ea6-9e38-473a-b491-00cadae42273', 'Ingen kærv', 'Gul', '8,8 x 18,8', '/resource/media/C9697D2P?ptype=1')
+    pics_2_1 = pill.PhotoIdentification('Filmovertrukne tabletter  500 mg', '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09', 'Ingen kærv', 'Hvid', '9 x 18,8', '/resource/media/MSUC458E?ptype=1')
+    photos_1 = [pics_1, pics_2_1]
+    pill_1 = pill.PillData(photos_1, "Abboticin", "Erythromycin")
 
-    if not resolvedependencies():
-        exit()
-    print('Everything OK!\r\n')
-
-    logger.info('Starting application.')
-
-    # Start the crawling process
-    medid.crawlloop()
-
-
-
+    temp = firestore._convert_obj_to_dict(pill_1)
+    result = firestore.db.collection("Test").document(pill_1.pillname).set(temp)
+    print(result)
 
 def checkrequirements() -> bool:
     # Are all requirements installed?
