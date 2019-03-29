@@ -21,25 +21,18 @@ logger = logging.getLogger('source')
 
 
 def main():
-    # if '-I' in sys.argv:
-    #     install()
-    #
-    # if not resolvedependencies():
-    #     exit()
-    # print('Everything OK!\r\n')
-    #
-    # logger.info('Starting application.')
-    #
-    # # Start the crawling process
-    # medid.crawlloop()
-    pics_1 = pill.PhotoIdentification('Filmovertrukne tabletter  500 mg  (novum)', '/resource/media/37171ea6-9e38-473a-b491-00cadae42273', 'Ingen kærv', 'Gul', '8,8 x 18,8', '/resource/media/C9697D2P?ptype=1')
-    pics_2_1 = pill.PhotoIdentification('Filmovertrukne tabletter  500 mg', '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09', 'Ingen kærv', 'Hvid', '9 x 18,8', '/resource/media/MSUC458E?ptype=1')
-    photos_1 = [pics_1, pics_2_1]
-    pill_1 = pill.PillData(photos_1, "Abboticin", "Erythromycin")
+    if '-I' in sys.argv:
+        install()
 
-    temp = firestore._convert_obj_to_dict(pill_1)
-    result = firestore.db.collection("Test").document(pill_1.pillname).set(temp)
-    print(result)
+    if not resolvedependencies():
+        exit()
+    print('Everything OK!\r\n')
+
+    logger.info('Starting application.')
+
+    # Start the crawling process
+    medid.crawlloop()
+
 
 def checkrequirements() -> bool:
     # Are all requirements installed?
