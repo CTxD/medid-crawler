@@ -1,16 +1,17 @@
 import os
-import firebase_admin
 import logging
-import json
+
+from firebase_admin import credentials, firestore, initialize_app
+
 from source.crawling import pill
-from firebase_admin import credentials, firestore
+from source.config import CONFIG
 
 
 logger = logging.getLogger(__name__)
 credentials = credentials.Certificate(
-    os.path.join(os.getcwd(), "medid-certificate.json")
+    os.path.join(os.getcwd(), CONFIG["CERT"])
 )
-medId = firebase_admin.initialize_app(credentials)
+medId = initialize_app(credentials)
 db = firestore.client()
 
 def _convert_obj_to_dict(obj):
