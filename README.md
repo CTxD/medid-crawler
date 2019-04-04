@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/DennisJuhl/medid-crawler.svg?token=BmpFwTTRoRpxzCvpvpxL&branch=develop)](https://travis-ci.com/DennisJuhl/medid-crawler)
 # Running
 
 ## Virtual environment

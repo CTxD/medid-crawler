@@ -5,8 +5,7 @@ python:
 install:
   - make install
   - pip install codecov
-virtualenv:
-  system_site_packages: true
+
 script: make test
 after_success:
   - codecov
