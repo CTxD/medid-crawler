@@ -2,7 +2,6 @@
 import os
 import uuid
 import json
-import time 
 
 import mockfirestore
 
@@ -89,41 +88,45 @@ def mock_data():
     # pill_2 = AutoFixture(pill, field_values={"pillname": "Panodil", "substance": "500"})
     pics_1 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg  (novum)',
-        '/resource/media/37171ea6-9e38-473a-b491-00cadae42273', 
+        '5',
+        ['/resource/media/37171ea6-9e38-473a-b491-00cadae42273'], 
         'Ingen kærv', 
-        'Gul', 
+        ['Gul'], 
         '8,8 x 18,8', 
-        '/resource/media/C9697D2P?ptype=1'
+        ['/resource/media/C9697D2P?ptype=1']
     )
     pics_2_1 = pill.PhotoIdentification(
-        'Filmovertrukne tabletter  500 mg', 
-        '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09', 
+        'Filmovertrukne tabletter  500 mg',
+        '5', 
+        ['/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09'], 
         'Ingen kærv', 
-        'Hvid', 
+        ['Hvid'], 
         '9 x 18,8', 
-        '/resource/media/MSUC458E?ptype=1'
+        ['/resource/media/MSUC458E?ptype=1']
     )
     photos_1 = [pics_1, pics_2_1]
-    pill_1 = pill.PillData(photos_1, "Abboticin", "Erythromycin")
+    pill_1 = pill.PillData("Abboticin", "Erythromycin", photos_1)
 
     pics_2 = pill.PhotoIdentification(
-        'Filmovertrukne tabletter  500 mg  (novum)', 
-        '/resource/media/37171ea6-9e38-473a-b491-00cadae42273', 
+        'Filmovertrukne tabletter  500 mg  (novum)',
+        '5', 
+        ['/resource/media/37171ea6-9e38-473a-b491-00cadae42273'], 
         'Ingen kærv', 
-        'Gul',
+        ['Gul'],
         '8,8 x 18,8',
-        '/resource/media/C9697D2P?ptype=1'
+        ['/resource/media/C9697D2P?ptype=1']
     )
     pics_2_2 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg',
-        '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09',
+        '5',
+        ['/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09'],
         'Ingen kærv',
-        'Hvid',
+        ['Hvid'],
         '9 x 18,8',
-        '/resource/media/MSUC458E?ptype=1'
+        ['/resource/media/MSUC458E?ptype=1']
     )
     photos_2 = [pics_2, pics_2_2]
-    pill_2 = pill.PillData(photos_2, "Viagra", "Villigril")
+    pill_2 = pill.PillData("Viagra", "Villigril", photos_2)
 
     fbm.db.collection("Pills").document(pill_1.pillname).set(pill_1)
     fbm.db.collection("Pills").document(pill_2.pillname).set(pill_2)
@@ -142,22 +145,24 @@ def test_add_valid():
     mock_data()
     pics_3 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg  (novum)',
-        '/resource/media/37171ea6-9e38-473a-b491-00cadae42273',
+        '5',
+        ['/resource/media/37171ea6-9e38-473a-b491-00cadae42273'],
         'Ingen kærv',
-        'Gul',
+        ['Gul'],
         '8,8 x 18,8',
-        '/resource/media/C9697D2P?ptype=1'
+        ['/resource/media/C9697D2P?ptype=1']
     )
     pics_3_3 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg',
-        '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09',
+        '5',
+        ['/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09'],
         'Ingen kærv',
-        'Hvid',
+        ['Hvid'],
         '9 x 18,8',
-        '/resource/media/MSUC458E?ptype=1'
+        ['/resource/media/MSUC458E?ptype=1']
     )
     photos_3 = [pics_3, pics_3_3]
-    pill_3 = pill.PillData(photos_3, "Abboti", "Erythromycin")
+    pill_3 = pill.PillData("Abboti", "Erythromycin", photos_3)
 
     fbm.add_or_update("Pills", pill_3)
 
@@ -168,6 +173,7 @@ def test_update_valid():
     mock_data()
     pics_2 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg  (novum)',
+        '5',
         '/resource/media/37171ea6-9e38-473a-b491-00cadae42273',
         'Ingen kærv',
         'Gul',
@@ -176,6 +182,7 @@ def test_update_valid():
     )
     pics_2_2 = pill.PhotoIdentification(
         'Filmovertrukne tabletter  500 mg',
+        '5',
         '/resource/media/15fb56d9-856a-4352-bb83-bca96eea9d09',
         'Ingen kærv',
         'Hvid',
@@ -183,7 +190,7 @@ def test_update_valid():
         '/resource/media/MSUC458E?ptype=1'
     )
     photos_2 = [pics_2, pics_2_2]
-    pill_2 = pill.PillData(photos_2, "Viagra", "Villigrilli")
+    pill_2 = pill.PillData("Viagra", "Villigrilli", photos_2)
 
     fbm.add_or_update("Pills", pill_2)
     get_pill_result = fbm.db.collection("Pills").document(pill_2.pillname).get().to_dict()
