@@ -6,6 +6,7 @@ import pytest
 
 from source.config import config
 
+
 @pytest.mark.parametrize("test_input, expected", [
     # Bool values
     ('True', True),
@@ -176,6 +177,7 @@ PROD_KEY = Value
         config.readconfig(mock)
 
         assert "KEY" not in config.CONFIG
+
 
 def test_readconfig_overwriting_value_with_environmenspecific_value():
     configbody = """

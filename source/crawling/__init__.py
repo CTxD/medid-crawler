@@ -1,8 +1,8 @@
-from . import process
+from . import iteration
 from . import crawler
 from . import druglistextractor
 from . import druginfopageextracter
 from . import pill
 
 
-__all__ = ["process", "crawler", "druglistextractor", "druginfopageextracter", "pill"]
+__all__ = ["iteration", "crawler", "druglistextractor", "druginfopageextracter", "pill"]

@@ -7,6 +7,7 @@ from typing import Union
 from source import config, medid
 from install import getuninstalledrequirements, install
 
+
 # The logger is configured in source/__init__.py, so make sure to import something from source 
 # before getting a logger instance. This way we use that configuration instead of creating a new,
 # default configuration. Also, the name of the logger must be 'source' (instead of __name__) when
@@ -19,7 +20,7 @@ logger = logging.getLogger('source')
 def main():
     if '-I' in sys.argv:
         install()
-    
+
     if not resolvedependencies():
         exit()
     print('Everything OK!\r\n')
@@ -28,8 +29,8 @@ def main():
 
     # Start the crawling process
     medid.crawlloop()
-    
-    
+
+
 def checkrequirements() -> bool:
     # Are all requirements installed?
     printstatus('Checking requirements')

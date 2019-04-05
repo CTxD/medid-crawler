@@ -1,7 +1,9 @@
 # pylint:disable=protected-access
+# pylint:disable=unused-argument
 import pytest
 import requests
 import bs4
+import httmock
 
 from source.crawling import crawler
 from source.common import inttimestamp
@@ -62,16 +64,54 @@ def test_complypoliteness_crawled_domain_exceeding_politeness():
 
 def test_crawl_unavailable_url():
     with pytest.raises(requests.RequestException):
-        crawler.crawl('someinvalidurl.dk')
+        with httmock.HTTMock(urlmock_status_raises_requestexception):
+            crawler.crawl('someinvalid.url')
 
 
 def test_crawl_available_url_invalid_status_code():
+    # Force non-compliance with politeness on our mockurls for faster test execution
+    crawler._domainlastvisit['mockurl.com'] = 0
+
     with pytest.raises(requests.HTTPError):
-        crawler.crawl('https://httpstat.us/400')
+        with httmock.HTTMock(urlmock_status_code_400):
+            crawler.crawl('http://mockurl.com')
 
 
 def test_crawl_available_url():
-    source = bs4.BeautifulSoup('200 OK'.encode('utf-8'), 'html.parser')
-    assert crawler.crawl('https://httpstat.us/200') == source
+    # Force non-compliance with politeness on our mockurls for faster test execution
+    crawler._domainlastvisit['mockurl.com'] = 0
+
+    source = bs4.BeautifulSoup('Hello World!'.encode('utf-8'), 'html.parser')
+    with httmock.HTTMock(urlmock_status_code_200):
+        response = crawler.crawl('http://mockurl.com')
+        assert response == source
+
+
+def test_crawl_available_url_comply_politeness_1():
+    now = inttimestamp.intnowstamp()
     
+    # Force compliance with politeness on our mockurl to let it wait for 1 second in order to test
+    # politeness compliance. 
+    crawler._domainlastvisit['mockurl.com'] = now - CONFIG['POLITENESS'] + 1
+
+    source = bs4.BeautifulSoup('Hello World!'.encode('utf-8'), 'html.parser')
+    with httmock.HTTMock(urlmock_status_code_200):
+        response = crawler.crawl('http://mockurl.com')
+        assert response == source
+
+        assert inttimestamp.intnowstamp() == pytest.approx(now + 1, 0.1)
+
+
+@httmock.urlmatch(netloc=r'(.*\.)?mockurl\.com$')
+def urlmock_status_code_200(url: str, request: requests.Request): 
+    return {'status_code': 200, 'content': 'Hello World!'}
+
+
+@httmock.urlmatch(netloc=r'(.*\.)?mockurl\.com$')
+def urlmock_status_code_400(url: str, request: requests.Request):
+    return {'status_code': 400, 'content': 'Bad request!'}
+
+
+def urlmock_status_raises_requestexception(url: str, request: requests.Request):
+    pass
     
