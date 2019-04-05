@@ -1,75 +1,167 @@
 from bs4 import BeautifulSoup
 import requests
+import logging
+from . import pill
+import re
 
-# # info body name: 
-# 9 glob-content-header-wrapper phone-content-header-openclose-wrapper
-# 12 glob-floatNone glob-content-header-wrapper phone-content-header-openclose-wrapper
-# 22 glob-floatLeft
-# # info body:
-# glob-floatNone glob-content-section-text phone-content-section-openclose-text 
+
+# Input: soup object
+# Output: object with pill name, activ substanc, and a list of photo elements
+def _getpilldata(soup):
+    pillname = _getpillname(soup)
+    substance = _getpillsubstance(soup)
+    photoinfo = _getphotoidentification(soup)
+
+    pillobj = pill.PillData(pillname, substance, photoinfo)
+    return pillobj
+    
+
+def _getpillsubstance(soup):
+    classname = 'SpaceBtm IndholdsstofferHeaderLinks'
+    substance = soup.find('div', attrs={'class': classname})
+    return substance.b.text
 
 
 # Input: Soup object.
 # Output: The name of the drug.
-def _get_pill_name(soup):
-    return soup.head.title.text 
+def _getpillname(soup):
+    return soup.h1.text 
+ 
+
+def _getpillkindandstrength(photoinfo):
+    temparr = []
+    headerclassname = 'thumbarrow'
+    try:
+        pilltype = photoinfo.find('td', attrs={'class': headerclassname}).h4.text
+        typetext = " ".join(pilltype.strip().split())
+        if typetext:
+            matches = re.match(r'(\D*)([\d,]* ?[\S]+)(\D*)', typetext)
+            temparr.append(matches.group(1).strip())
+            temparr.append(matches.group(2).strip())
+        return temparr
+    except Exception:
+        logging.error('Something went wrong parsing the soup from the url. '
+                      'The following exceptins was raised: {type(e)} :: {str(e)}'
+                      )
+        temparr.extend([None, None]) 
+        return temparr
 
 
-# Input: Soup object.
-# Output: The headline of the information area.
-def _get_information_area_headline(soup):
-    classname = 'glob-floatLeft'
-    for informationarea in soup.find_all('h3', attrs={'class': classname}):
-        headline = informationarea.text
-        print(headline)
+def _getpillimage(photoinfo):
+    # iterates over all images and gets the images of the pills
+    classname = 'glob-ident-row-image alignLeft vertAlignTop'
+    imagearr = []
+    for pillphoto in photoinfo.find_all('img', attrs={classname}):
+        imagearr.append(pillphoto['src'])
+    return imagearr
 
 
-# Input: soup object.
-# Output: One of the information area bodies.
-def _get_information_area_body(soup):
-    classname = 'glob-floatNone glob-content-section-text phone-content-section-openclose-text'
-    for informationareabody in soup.find_all('div', attrs={'class': classname}):
-        _traverse_children(informationareabody)
+def _getpillimprint(photoinfo):
+    isimprintphoto = photoinfo.find('img', attrs={'glob-ident-praeg DisplayInline'})
+    isimprinttext = photoinfo.find('div', attrs={'glob-floatRight'})
+    imprintarr = []
+
+    if isimprintphoto is not None:                    
+        # Gets the imprint image and stores it in the dictionary
+        for imprintphoto in photoinfo.find_all('img', attrs={'glob-ident-praeg DisplayInline'}):
+            imprintarr.append(imprintphoto['src'])
+    else:
+        imprintarr = isimprinttext.text.split(',')
+    return imprintarr
 
 
-# Input: div body
-# Output: a list with strings
-def _traverse_children(informationareabody):
-    #  asd = []
-    for child in informationareabody.recursiveChildGenerator():
-        name = getattr(child, "name", None)
-        if name is not None:
-            pass
-            # print(name)
-        elif not child.isspace(): # leaf node, don't print spaces
-            print(child)
-            # asd.append(child)
-    print("--------------------")
-    # print(asd)
+def _getpillcolour(tablevalue):
+    return tablevalue.text.split(',')
 
 
-def _process_data(soup):
-    classname = 'glob-content-header-wrapper phone-content-header-openclose-wrapper'
-    asd = soup.find_all('div', attrs={'class': classname}).h3
-    print(asd)
+# Input: soup object
+# Output: list of pill features for one or more pills
+def _getphotoidentification(soup):
+    headerclassname = 'thumbarrow'
+    keymapping = {
+        'præg': 'imprint',
+        'kærv': 'score',
+        'farve': 'colour',
+        'mål': 'sizeDimensions'
+    }
+    imageinfoarr = []
+    isitapill = soup.find('td', attrs={'class': headerclassname})
+    isitapill = isitapill.h4.text.lower()
+    # Checks if it is a tablet or a kapsle
+    if 'tablet' in isitapill or 'kapsle' in isitapill:
+        # Iterates over the amount of different types of pills there are for one kind
+        for photoinfo in soup.find_all('div', attrs={'class': 'glob-ident-row-openclose'}):
+            tempfeaturedict = {
+                "kind": "",
+                "strength": "",
+                "imprint": "",
+                "score": "",
+                "colour": "",
+                "sizeDimensions": "",
+                "imageUrl": ""
+            }
+
+            # Gets the pill type and formats it
+            pilltypeandstrength = _getpillkindandstrength(photoinfo) 
+            tempfeaturedict["kind"] = pilltypeandstrength[0]
+            tempfeaturedict["strength"] = pilltypeandstrength[1]
+
+            # Iterates over the list of pill features and ekstrackts the key and value pairs
+            table = photoinfo.find('table', attrs={'class': 'glob-identRowTable'})
+            for tablerow in table.find_all('tr'):
+                tablekey = tablerow.find('td', attrs={'class': 'glob-ident-row-data-col-row-mark'}).text
+                tablekey = tablekey.lower().split()[0].split(':')[0]
+                tablevalue = tablerow.find('td', attrs={'class': 'glob-alignRight glob-ident-second-size'})
+
+                if tablekey == "præg":
+                    tempfeaturedict["imprint"] = _getpillimprint(photoinfo)
+                elif tablekey == "farve":
+                    tempfeaturedict["colour"] = _getpillcolour(tablevalue)
+                else:
+                    tempfeaturedict[keymapping[tablekey]] = tablevalue.text
+            
+            # Gets the image of the pill
+            image = _getpillimage(photoinfo)
+            tempfeaturedict["imageUrl"] = image
+            imageinfoarr.append(tempfeaturedict)
+            
+    return imageinfoarr
 
 
 # Gets a url and sends it to processedata() 
-def getdata(url):
-    try:
-        source = requests.get(url).text
-        soup = BeautifulSoup(source, 'html.parser')
-    except expression as identifier:
-        pass
-        print(url)
-        print("somthing went wrong")
-    finally:
-        # _process_data(soup)
-        # _get_information_area_body(soup)
-        _get_information_area_headline(soup)
-        # _get_pill_name(soup)
-        # _whattosearchfor(soup)
-        # print(soup)
+def getdata(urls):
+    featureobjarr = []
+    for url in urls:
+        try:
+            source = requests.get(url).text
+            soup = BeautifulSoup(source, 'html.parser')
+            # _traverse_children(soup)
+            featureobjarr.append(_getpilldata(soup))
+            # _getphotoidentification(soup)
+        except Exception:
+            logging.error('Something went wrong parsing the soup from the url. '
+                          'The following exceptins was raised: {type(e)} :: {str(e)}'
+                          )
 
 
-getdata('http://pro.medicin.dk/Medicin/Praeparater/536')
+# # will be used for traversing thuge all categories for one pill
+# def _traverse_children(soup):
+#     keymapping = {
+#         "Foto og identifikation": "photoandidentification"
+#     }
+#     categories = {
+#         "photoandidentification": ""
+#     }
+#     classnameone = 'glob-floatNone glob-content-section-wrapper'
+#     classnametwo = 'glob-floatNone glob-content-section-wrapper phone-content-section-wrapper'
+#     headclassname = 'glob-floatLeft'
+#     bodyclassname = 'glob-floatNone glob-content-section-text phone-content-section-openclose-text'
+    
+#     for categorieone in soup.find_all('div', attrs={classnameone}):
+#         for head in categorieone.find_all('h3', attrs={headclassname}):
+#             print(head.text)
+#     print("------------------------------------------------------")
+#     for categorietwo in soup.find_all('div', attrs={classnametwo}):
+#         for head in categorietwo.find_all('h3', attrs={headclassname}):
+#             print(head.text) 
+# '''

@@ -2,9 +2,9 @@
 Wrapper for starting a crawling iteration.
 """
 
-from . import druglistextractor
+from . import druginfopageextracter
 
 
 def start():
-    druglistextractor.getdruglinklist()
+    druginfopageextracter.main()
     
