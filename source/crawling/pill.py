@@ -115,8 +115,7 @@ from typing import List
 
 
 class PhotoIdentification:
-
-    def __init__(self, kind, strength, imprint, score, colour, sizeDimensions, imageUrl):
+    def __init__(self, kind, strength, imprint, score, colour, sizeDimensions, imageUrl):  # noqa
         self.kind = kind
         self.strength = strength
         self.imprint: List[str] = imprint
@@ -127,7 +126,6 @@ class PhotoIdentification:
 
 
 class PillData:
-    
     def __init__(self, pillname: str, substance: str, photofeatures: List[PhotoIdentification]):
         self.pillname = pillname
         self.substance = substance

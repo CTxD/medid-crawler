@@ -1,31 +1,91 @@
-from bs4 import BeautifulSoup
-import requests
 import logging
-from . import pill
+from . import pill, crawler
 import re
+
+logger = logging.getLogger(__name__)
 
 
 # Input: soup object
 # Output: object with pill name, activ substanc, and a list of photo elements
 def _getpilldata(soup):
-    pillname = _getpillname(soup)
-    substance = _getpillsubstance(soup)
-    photoinfo = _getphotoidentification(soup)
-
-    pillobj = pill.PillData(pillname, substance, photoinfo)
-    return pillobj
+    if _ismedicincompatible(soup):
+        print("IM MAKING AN PILL OBJ")
+        pillname = _getpillname(soup)
+        substance = _getpillsubstance(soup)
+        photoinfo = _getphotoidentification(soup)
+       
+        return pill.PillData(pillname, substance, photoinfo)
+    return None
     
+
+def _ismedicincompatible(soup):
+    try:
+        headerclassname = 'thumbarrow'
+        isitapill = soup.find('td', attrs={'class': headerclassname})
+        isitapill = isitapill.h4.text.lower()
+        # Checks if it is a tablet or a kapsle
+        if 'tablet' in isitapill or 'kapsle' in isitapill:
+            print("it is a tablet or a kapsle")
+            try:
+                substanceclassname = 'SpaceBtm IndholdsstofferHeaderLinks'
+                substance = soup.find('div', attrs={'class': substanceclassname}).b.text
+                if substance is not None:
+                    print("in substance if")
+                    return True
+            except Exception as e:
+                print("in exception")
+                e = False
+                return e
+    except Exception:
+        print("it is not a tablet or a kapsle")
+        return False
+    return False
+
+
+def _isphotoandidentification(soup):
+    try:
+        headerclassname = 'thumbarrow'
+        isitapill = soup.find('td', attrs={'class': headerclassname})
+        isitapill = isitapill.h4.text.lower()
+        # Checks if it is a tablet or a kapsle
+        if 'tablet' in isitapill or 'kapsle' in isitapill:
+            print("it is a tablet or a kapsle")
+            return True
+    except Exception:
+        print("it is not a tablet or a kapsle")
+        return False
+    return False
+   
+    # headclassname = 'glob-floatLeft'
+    # categorie = "foto og identifikation"
+    # categories = ''
+    
+    # for head in soup.find_all('h3', attrs={headclassname}):
+    #     head = head.text.lower()
+    #     categories += head
+    # if categories == categorie:
+    #     print("there is a categorie")
+    #     return True
+    # print("there is not a categorie")  
+    # return False
+
 
 def _getpillsubstance(soup):
     classname = 'SpaceBtm IndholdsstofferHeaderLinks'
     substance = soup.find('div', attrs={'class': classname})
-    return substance.b.text
+    return substance.b.text.strip()
 
 
 # Input: Soup object.
 # Output: The name of the drug.
 def _getpillname(soup):
-    return soup.h1.text 
+    rawname = soup.h1.text.strip()
+    if '/' in rawname:
+        print('####################', rawname, '#############################')
+        rawname = rawname.replace('/', '\\')
+        print('####################', rawname, '#############################')
+
+    return rawname
  
 
 def _getpillkindandstrength(photoinfo):
@@ -39,10 +99,11 @@ def _getpillkindandstrength(photoinfo):
             temparr.append(matches.group(1).strip())
             temparr.append(matches.group(2).strip())
         return temparr
-    except Exception:
-        logging.error('Something went wrong parsing the soup from the url. '
-                      'The following exceptins was raised: {type(e)} :: {str(e)}'
-                      )
+    except Exception as e:
+        logger.error(
+            'Something went wrong parsing the soup from the url. '
+            f'The following exceptins was raised: {type(e)} :: {str(e)}'
+        )
         temparr.extend([None, None]) 
         return temparr
 
@@ -64,14 +125,14 @@ def _getpillimprint(photoinfo):
     if isimprintphoto is not None:                    
         # Gets the imprint image and stores it in the dictionary
         for imprintphoto in photoinfo.find_all('img', attrs={'glob-ident-praeg DisplayInline'}):
-            imprintarr.append(imprintphoto['src'])
+            imprintarr.append(imprintphoto['src'].strip())
     else:
-        imprintarr = isimprinttext.text.split(',')
+        imprintarr = [imp.strip() for imp in isimprinttext.text.split(',')]
     return imprintarr
 
 
 def _getpillcolour(tablevalue):
-    return tablevalue.text.split(',')
+    return [color.strip() for color in tablevalue.text.split(',')]
 
 
 # Input: soup object
@@ -109,9 +170,15 @@ def _getphotoidentification(soup):
             # Iterates over the list of pill features and ekstrackts the key and value pairs
             table = photoinfo.find('table', attrs={'class': 'glob-identRowTable'})
             for tablerow in table.find_all('tr'):
-                tablekey = tablerow.find('td', attrs={'class': 'glob-ident-row-data-col-row-mark'}).text
+                tablekey = tablerow.find(
+                    'td', 
+                    attrs={'class': 'glob-ident-row-data-col-row-mark'}
+                ).text
                 tablekey = tablekey.lower().split()[0].split(':')[0]
-                tablevalue = tablerow.find('td', attrs={'class': 'glob-alignRight glob-ident-second-size'})
+                tablevalue = tablerow.find(
+                    'td', 
+                    attrs={'class': 'glob-alignRight glob-ident-second-size'}
+                )
 
                 if tablekey == "præg":
                     tempfeaturedict["imprint"] = _getpillimprint(photoinfo)
@@ -123,26 +190,34 @@ def _getphotoidentification(soup):
             # Gets the image of the pill
             image = _getpillimage(photoinfo)
             tempfeaturedict["imageUrl"] = image
-            imageinfoarr.append(tempfeaturedict)
+            imageinfoarr.append(pill.PhotoIdentification(**tempfeaturedict))
             
     return imageinfoarr
 
 
 # Gets a url and sends it to processedata() 
 def getdata(urls):
-    featureobjarr = []
+    #featureobjarr = []
     for url in urls:
         try:
-            source = requests.get(url).text
-            soup = BeautifulSoup(source, 'html.parser')
-            # _traverse_children(soup)
-            featureobjarr.append(_getpilldata(soup))
-            # _getphotoidentification(soup)
-        except Exception:
-            logging.error('Something went wrong parsing the soup from the url. '
-                          'The following exceptins was raised: {type(e)} :: {str(e)}'
-                          )
-
+            print("---------start---------")
+            logger.info('Extracting drug info from url %s', url)
+            soup = crawler.crawl(url)
+            pilldata = _getpilldata(soup)
+            if pilldata is None:
+                logger.warning('Drug not pill or tablet')
+                print("---------stop---------")
+                continue
+            yield pilldata
+            # featureobjarr.append(pilldata)
+            print("---------append---------")
+        except Exception as e:
+            logger.error(
+                'Something went wrong parsing the soup from the url. '
+                f'The following exceptins was raised: {type(e)} :: {str(e)}'
+                f' ON URL: {url}'
+            )
+    # return featureobjarr
 
 # # will be used for traversing thuge all categories for one pill
 # def _traverse_children(soup):
