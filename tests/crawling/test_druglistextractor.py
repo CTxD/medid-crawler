@@ -146,8 +146,8 @@ def test_getdruglinklist_valid(caplog):
         total = sum([len(number) for _, number in result.items()])
         assert total == 26*3
 
-        assert len(caplog.records) == 1
-        assert caplog.records[0].levelname == 'INFO'
+        assert len(caplog.records) == 27
+        assert caplog.records[-1].levelname == 'INFO'
         assert '(0 failed)' in caplog.text
     
     druglistextractor.crawler.CONFIG['POLITENESS'] = oldpoliteness
@@ -165,10 +165,13 @@ def test_getdruglinklist_invalid_contents(caplog):
         total = sum([len(number) for _, number in result.items() if number is not None])
         assert total == 0
 
-        assert len(caplog.records) == 27
+        assert len(caplog.records) == 53
         assert caplog.records[-1].levelname == 'WARNING'
+        everysecond = False
         for log in caplog.records[:-2]:
-            assert log.levelname == 'ERROR'
+            loglevelname = 'INFO' if everysecond else 'ERROR'
+            assert log.levelname == loglevelname
+            everysecond = not everysecond
         assert '(26 failed)' in caplog.text
     
     druglistextractor.crawler.CONFIG['POLITENESS'] = oldpoliteness

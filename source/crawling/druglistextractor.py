@@ -17,13 +17,13 @@ def getdruglinklist() -> Dict[str, Union[List[str], None]]:
     letterdict: Dict[str, Union[List[str], None]] = {}
     
     # Iterate letters from a-z
-    for letter in ('a'):# ascii_lowercase:
+    for letter in ascii_lowercase:
         links = _extractdruglinksbyletter(letter)
         # If a list of links is returned, we cast it to set and back to list in order to remove any
         # duplicate links.
         letterdict[letter] = list(set(links)) if isinstance(links, list) else links
         logger.info(
-            f'Links for letter {letter}: {len(letterdict[letter]) if letterdict[letter] else "None"}'
+            f'Links for letter {letter}: {len(letterdict[letter]) if letterdict[letter] else "None"}' # type: ignore # noqa
         )
     # Prepare a log message according to the results getting the drug link list
     loghandler = logger.info

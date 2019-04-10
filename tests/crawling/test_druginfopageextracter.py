@@ -1,6 +1,12 @@
 # pylint:disable=protected-access
+import collections
+from urllib.parse import urlparse
 import bs4
+import httmock
+import requests
 from source.crawling import druginfopageextracter
+from source.crawling.pill import PhotoIdentification, PillData
+
 
 imprintimagehtml = """
 <tbody><tr>
@@ -12,17 +18,67 @@ imprintimagehtml = """
 </tbody>
 """ 
 
-'''
-imprintonetexthtml = """
-<tbody><tr>
-  <td class="glob-ident-row-data-col-row-mark" valign="top" nowrap="">Præg:</td>
-  <td class="glob-alignRight glob-ident-second-size" valign="top">
-    <div class="glob-floatRight">VS2</div>
-  </td>
-</tr>
-</tbody>
-""" 
-'''
+compatibilityhtml = """
+<h1 class="ptitle" title="Actiq/asd">Actiq<sup>/</sup>asd<span class="glob-h1mini"> </span></h1>
+  <div class="glob-floatLeft width75Procent">
+    <div class="glob-praeparat-indholdsstofffer-header">
+      <div class="SpaceBtm IndholdsstofferHeaderLinks"><a href="/Medicin/Indholdsstoffer/442"><b>Fentanyl</b></a></div>
+    </div>
+  </div>
+<body>
+<div class="glob-ident-row-openclose">
+        <table class="thumbHeader">
+          <tbody><tr>
+            <td class="thumbarrow" valign="top">
+                <img class="glob-floatLeft rotatearrow" src="/Content/Images
+                /Pro/Topmenu/link_pro.gif" alt="" width="8" height="13">
+            <h4 class="glob-floatLeft glob-main-color">Tabletter
+              &nbsp;5 mg</h4>
+            </td>
+            <td class="thumbnail" valign="top"><img src="/resource/media
+            /NP4W2MUH?ptype=1&amp;icon=true&amp;width=100&amp;height=50"></td>
+          </tr>
+        </tbody></table>
+        <div class="identRowTable glob-col650 glob-floatLeft" style="display: none;">
+          <div class="glob-floatLeft glob-col160 glob-marginRight20">
+            <div class="glob-floatLeft glob-col160">
+              <table class="glob-identRowTable" cellspacing="0" cellpadding="2" border="0">
+                <colgroup>
+                  <col style="width:30%;">
+                  <col style="width:70%;">
+                </colgroup>
+                <tbody><tr>
+                  <td class="glob-ident-row-data-col-row-mark" valign="top" nowrap="">Præg:</td>
+                  <td class="glob-alignRight glob-ident-second-size" valign="top">
+                    <div class="glob-floatRight">A-007, 5</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="glob-ident-row-data-col-row-mark" valign="top">Kærv:</td>
+                  <td class="glob-alignRight glob-ident-second-size" valign="top">Ingen kærv</td>
+                </tr>
+                <tr>
+                  <td class="glob-ident-row-data-col-row-mark" valign="top">Farve:</td>
+                  <td class="glob-alignRight glob-ident-second-size" valign="top">Blå</td>
+                </tr>
+                <tr>
+                  <td class="glob-ident-row-data-col-row-mark" valign="top">Mål i mm:</td>
+                  <td class="glob-alignRight glob-ident-second-size" valign="top">4,6 x 8,2</td>
+                </tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div class="glob-col430 glob-floatLeft glob-marginLeft9 vertAlignTop padtop15">
+          <img class="glob-ident-row-image alignLeft vertAlignTop" src="/resource/media/NP4W2MUH?ptype=1" alt="tabletter 5 mg ">
+          <div class="glob-floatNone"></div>
+            <div class="glob-floatNone">&nbsp;</div>
+            <div class="glob-floatNone">&nbsp;</div>
+          </div>
+        </div>
+        <div class="glob-floatNone">&nbsp;</div>
+      </div>
+</body>
+"""
 
 imagehtml = """
 <body>
@@ -101,7 +157,7 @@ plasterhtml = """
 
 headerhtml = """
 <div>
-  <h1 class="ptitle" title="Actiq®">Actiq<sup>®</sup><span class="glob-h1mini"> </span></h1>
+  <h1 class="ptitle" title="Actiq/asd">Actiq<sup>/</sup>asd<span class="glob-h1mini"> </span></h1>
   <div class="glob-floatLeft width75Procent">
     <div class="glob-praeparat-indholdsstofffer-header">
       <div class="SpaceBtm IndholdsstofferHeaderLinks"><a href="/Medicin/Indholdsstoffer/442"><b>Fentanyl</b></a></div>
@@ -122,11 +178,25 @@ kindhtml = """
             </td>
 """
 
+VALIDSCHEME, VALIDNETLOC, VALIDPATH, _, VALIDQUERY, _ = urlparse('http://mockurl.valid/')
+
+
+@httmock.urlmatch(scheme=VALIDSCHEME, netloc=VALIDNETLOC, path=VALIDPATH, query=VALIDQUERY)
+def valid_url_mock_returns_invalid_content(url: str, request: requests.Request):
+    return {'status_code': 200, 'content': '<p>Invalid content</p>'}
+
+
+@httmock.urlmatch(scheme=VALIDSCHEME, netloc=VALIDNETLOC, path=VALIDPATH, query=VALIDQUERY)
+def valid_url_mock_returns_valid_content(url: str, request: requests.Request):
+    return {'status_code': 200, 'content': compatibilityhtml}
+
+
 soup = bs4.BeautifulSoup(imagehtml, 'html.parser')
 plastersoup = bs4.BeautifulSoup(plasterhtml, 'html.parser')
 headersoup = bs4.BeautifulSoup(headerhtml, 'html.parser')
 imprintsoup = bs4.BeautifulSoup(imprintimagehtml, 'html.parser')
 kindsoup = bs4.BeautifulSoup(kindhtml, 'html.parser')
+compatibilitysoup = bs4.BeautifulSoup(compatibilityhtml, 'html.parser')
 
 
 def test_extractimagesourcefrombs4():
@@ -146,7 +216,7 @@ def test__getpillkindandstrength_nokindorstrength():
 
 def test__getpillimprint_manytextelements():
     result = druginfopageextracter._getpillimprint(soup)
-    assert result == ['A-007', ' 5']
+    assert result == ['A-007', '5']
 
 
 def test__getpillimprint_image():
@@ -165,7 +235,7 @@ def test__getpillcolour_manycolours():
     colourhtml = '<td class="glob-alignRight glob-ident-second-size" valign="top">Hvid, Black</td>'
     coloursoup = bs4.BeautifulSoup(colourhtml, 'html.parser')
     result = druginfopageextracter._getpillcolour(coloursoup)
-    assert result == ['Hvid', ' Black']
+    assert result == ['Hvid', 'Black']
 
 
 def test__getphotoidentification_nopillorcapsule():
@@ -175,16 +245,93 @@ def test__getphotoidentification_nopillorcapsule():
 
 def test__getphotoidentification_withpillorcapsule():
     result = druginfopageextracter._getphotoidentification(soup)
-    assert result == [{'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', ' 5'], 
-                       'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
-                       'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']}]
+    dataeq = PhotoIdentification(**{
+        'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
+        'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
+        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+    })
+    
+    assert len(result) == 1
+    for prop in dir(result[0]):
+        if prop.startswith('_'):
+            continue
+        assert hasattr(dataeq, prop)
+
+        resattr = getattr(result[0], prop)
+        dataattr = getattr(dataeq, prop)
+
+        assert type(resattr) == type(dataattr) # noqa
+
+        if isinstance(resattr, list):
+            assert collections.Counter(dataattr) == collections.Counter(resattr)
+        else:
+            assert dataattr == resattr
 
 
-def test__getpillname():
+def test__getpillname_withslash():
     result = druginfopageextracter._getpillname(headersoup)
-    assert result == 'Actiq® '
+    assert result == "Actiq\\asd"
 
 
 def test__getpillsubstance():
     result = druginfopageextracter._getpillsubstance(headersoup)
     assert result == 'Fentanyl'
+
+
+def test__ismedicincompatible_withinvalidinput():
+    result = druginfopageextracter._ismedicincompatible(plastersoup)
+    assert result is False
+
+
+def test__ismedicincompatible_withvalidinput():
+    result = druginfopageextracter._ismedicincompatible(compatibilitysoup)
+    assert result is True
+
+
+def test__getpilldata_withinvalidinput():
+    result = druginfopageextracter._getpilldata("This is invalid data")
+    assert result is None
+
+
+def test__getpilldata_withvalidinput():
+    result = druginfopageextracter._getpilldata(compatibilitysoup)
+    dataeq = PillData("Actiq\\asd", "Fentanyl", PhotoIdentification(**{
+        'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
+        'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
+        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+    }))
+    assert result.pillname == dataeq.pillname
+    assert result.substance == dataeq.substance
+
+
+def test_getdata_invalid_data(caplog):
+    with httmock.HTTMock(valid_url_mock_returns_invalid_content):
+        pills = list(druginfopageextracter.getdata(['http://mockurl.valid/']))
+        assert len(caplog.records) == 2
+        assert pills == []
+        assert 'Extracting drug info from url http://mockurl.valid/' in caplog.text
+        assert 'Drug not pill or tablet' in caplog.text
+
+
+def test_getdata_exception(caplog):
+    with httmock.HTTMock(valid_url_mock_returns_invalid_content):
+        pills = list(druginfopageextracter.getdata([None]))
+        assert len(caplog.records) == 2
+        assert pills == []
+        assert 'Extracting drug info from url' in caplog.text
+        assert 'omething went wrong parsing the soup from the url.' in caplog.text
+
+
+def test_getdata_valid_data(caplog):
+    data = PillData("Actiq\\asd", "Fentanyl", PhotoIdentification(**{
+        'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
+        'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
+        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+    }))
+    with httmock.HTTMock(valid_url_mock_returns_valid_content):
+        result = list(druginfopageextracter.getdata(['http://mockurl.valid/']))
+        assert len(caplog.records) == 1
+        assert result is not None
+        assert len(result) == 1
+        assert result[0].pillname == data.pillname 
+        assert result[0].substance == data.substance
