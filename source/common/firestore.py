@@ -10,7 +10,7 @@ from source.config import CONFIG
 logger = logging.getLogger(__name__)
 
 
-class FBManager():
+class FBManager:
     def __init__(self):
         certificate = credentials.Certificate(
             os.path.join(os.getcwd(), CONFIG["CERT"])

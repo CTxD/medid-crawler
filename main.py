@@ -6,6 +6,7 @@ from typing import Union
 
 from source import config, medid
 from install import getuninstalledrequirements, install
+from source.crawling import crawler
 
 
 # The logger is configured in source/__init__.py, so make sure to import something from source 
@@ -18,6 +19,7 @@ logger = logging.getLogger('source')
 
 
 def main():
+    print(crawler.get_image_byte64_encoding("/resource/media/C7F844VV?ptype=1"))
     if '-I' in sys.argv:
         install()
 
