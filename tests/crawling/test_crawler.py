@@ -9,6 +9,7 @@ from source.crawling import crawler
 from source.common import inttimestamp
 from source.config import CONFIG, readconfig
 
+from urllib.parse import urlparse
 
 readconfig('config.cfg')
 
@@ -102,6 +103,30 @@ def test_crawl_available_url_comply_politeness_1():
         assert inttimestamp.intnowstamp() == pytest.approx(now + 1, 0.1)
 
 
+VALIDSCHEME, VALIDNETLOC, VALIDPATH, _, VALIDQUERY, _ = urlparse('http://pro.medicin.dk/mockimagepath')
+@httmock.urlmatch(scheme=VALIDSCHEME, netloc=VALIDNETLOC, path=VALIDPATH, query=VALIDQUERY)
+def valid_image_url(url: str, request: requests.Request):
+    return {'status_code': 200, 'content': 'something'}
+
+
+def test_image_encoding():
+    with httmock.HTTMock(valid_image_url):
+        encoding_result = crawler.get_image_byte64_encoding("/mockimagepath")
+    assert encoding_result == b'c29tZXRoaW5n'
+
+
+INVALIDSCHEME, INVALIDNETLOC, INVALIDPATH, _, INVALIDQUERY, _ = urlparse('http://pro.medicin.dk/mockimagepathinvalid')
+@httmock.urlmatch(scheme=INVALIDSCHEME, netloc=INVALIDNETLOC, path=INVALIDPATH, query=INVALIDQUERY)
+def invalid_image_url(url: str, request: requests.Request):
+    return {'status_code': 404, 'content': 'Not an image'}
+
+
+def test_image_encoding_failing():
+    with httmock.HTTMock(invalid_image_url):
+        encoding_result = crawler.get_image_byte64_encoding("/mockimagepathinvalid")
+    assert encoding_result is None
+
+
 @httmock.urlmatch(netloc=r'(.*\.)?mockurl\.com$')
 def urlmock_status_code_200(url: str, request: requests.Request): 
     return {'status_code': 200, 'content': 'Hello World!'}
@@ -114,4 +139,3 @@ def urlmock_status_code_400(url: str, request: requests.Request):
 
 def urlmock_status_raises_requestexception(url: str, request: requests.Request):
     pass
-    

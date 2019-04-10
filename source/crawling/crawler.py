@@ -1,7 +1,10 @@
 """
 General crawling functionality.
 """
-import time 
+
+import time
+import base64
+
 from typing import Dict
 from urllib.parse import urlsplit
 
@@ -28,17 +31,18 @@ def _complypoliteness(url: str) -> int:
         return 0
 
     # Get the time (in seconds) until we can crawl the domain again
-    delta = CONFIG['POLITENESS'] - (inttimestamp.intnowstamp() - _domainlastvisit[domain])
+    delta = CONFIG['POLITENESS'] - \
+        (inttimestamp.intnowstamp() - _domainlastvisit[domain])
 
     # If the time since our last crawl of this domain exceeds our POLITENESS factor, we prune the
     # domain from the dict and return 0, indicating we can crawl the domain immediately
     if delta <= 0:
         del _domainlastvisit[domain]
         return 0
-    
+
     # Else, we return the number of seconds until we can crawl the domain again
     return delta
-    
+
 
 def getdomain(url: str) -> str:
     """
@@ -51,8 +55,9 @@ def getdomain(url: str) -> str:
     """
     splitresult = urlsplit(url.lower())
 
-    # E.g. http://www.google.com/ => google.com 
-    domain = splitresult.netloc if splitresult.scheme.startswith('http') else splitresult.scheme
+    # E.g. http://www.google.com/ => google.com
+    domain = splitresult.netloc if splitresult.scheme.startswith(
+        'http') else splitresult.scheme
 
     # For non-http urls, the entire url is considered a path
     # E.g. www.google.com/something => google.com
@@ -69,7 +74,7 @@ def getdomain(url: str) -> str:
         domain = domain.split('www.')[1]
 
     return domain
-    
+
 
 def crawl(url: str) -> bs4.BeautifulSoup:
     """
@@ -90,17 +95,43 @@ def crawl(url: str) -> bs4.BeautifulSoup:
     try:
         # Crawl page
         response = requests.get(url, timeout=CONFIG['TIMEOUT'])
-    
+
     # All errors raised by requests inherit from RequestException
     except requests.RequestException as e:
         raise e
-    
+
     # Check to see the response status code
     # Anything not in [200;299] raises an error
     if response.status_code < 200 or response.status_code > 299:
         raise requests.HTTPError(response=response)
 
-    # If status code is 2xx, parse the response to a BeautifulSoup instance and return it 
+    # If status code is 2xx, parse the response to a BeautifulSoup instance and return it
     source = bs4.BeautifulSoup(response.text.encode('utf-8'), 'html.parser')
-    
+
     return source
+
+
+def get_image_byte64_encoding(relative_url: str):
+    """
+    If you provide an invalid url for, the function returns None.
+
+    Quick-tip:
+    To decode image;
+    # imgdata = base64.b64decode(imgstring)
+    # filename = 'some_image.jpg'
+    # with open(filename, 'wb') as f:
+    #     f.write(imgdata)
+    """
+
+    img_url = "http://pro.medicin.dk" + relative_url
+
+    delta = _complypoliteness(img_url)
+    if delta > 0:  # pragma: no cover
+        time.sleep(delta)
+
+    r = requests.get(img_url)
+
+    if r.status_code != 200:
+        return None
+
+    return base64.b64encode(r.content)

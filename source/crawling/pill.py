@@ -115,14 +115,14 @@ from typing import List
 
 
 class PhotoIdentification:
-    def __init__(self, kind, strength, imprint, score, colour, sizeDimensions, imageUrl):  # noqa
+    def __init__(self, kind, strength, imprint, score, colour, sizeDimensions, imageEncoding):  # noqa
         self.kind = kind
         self.strength = strength
         self.imprint: List[str] = imprint
         self.score = score
         self.colour: List[str] = colour
         self.sizeDimensions = sizeDimensions
-        self.imageUrl: List[str] = imageUrl
+        self.imageEncoding: List[str] = imageEncoding
 
 
 class PillData:

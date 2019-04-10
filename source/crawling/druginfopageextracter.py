@@ -35,6 +35,7 @@ def _ismedicincompatible(soup):
         return False
     return False
 
+
 # Input: soup object
 # Output: string with the substance
 def _getpillsubstance(soup):
@@ -50,7 +51,8 @@ def _getpillname(soup):
     if '/' in rawname:
         rawname = rawname.replace('/', '\\')
     return rawname
- 
+
+
 # Input: soup object
 # Output: array with two elements first: kind. second strength
 def _getpillkindandstrength(photoinfo):
@@ -72,6 +74,7 @@ def _getpillkindandstrength(photoinfo):
         temparr.extend([None, None]) 
         return temparr
 
+
 # Input: soup object
 # Output: array with strings
 def _getpillimage(photoinfo):
@@ -79,8 +82,11 @@ def _getpillimage(photoinfo):
     classname = 'glob-ident-row-image alignLeft vertAlignTop'
     imagearr = []
     for pillphoto in photoinfo.find_all('img', attrs={classname}):
-        imagearr.append(pillphoto['src'])
+        encoding = crawler.get_image_byte64_encoding(pillphoto['src'])
+        if encoding is not None:
+            imagearr.append(encoding)
     return imagearr
+
 
 # Input: soup object
 # Output: array with strings imprint
@@ -96,6 +102,7 @@ def _getpillimprint(photoinfo):
     else:
         imprintarr = [imp.strip() for imp in isimprinttext.text.split(',')]
     return imprintarr
+
 
 # Input: soup object
 # Output: array of string containing colours elements
@@ -127,7 +134,7 @@ def _getphotoidentification(soup):
                 "score": "",
                 "colour": "",
                 "sizeDimensions": "",
-                "imageUrl": ""
+                "imageEncoding": ""
             }
 
             # Gets the pill type and formats it
@@ -154,10 +161,10 @@ def _getphotoidentification(soup):
                     tempfeaturedict["colour"] = _getpillcolour(tablevalue)
                 else:
                     tempfeaturedict[keymapping[tablekey]] = tablevalue.text
-            
+        
             # Gets the image of the pill
             image = _getpillimage(photoinfo)
-            tempfeaturedict["imageUrl"] = image
+            tempfeaturedict["imageEncoding"] = image
             imageinfoarr.append(pill.PhotoIdentification(**tempfeaturedict))
             
     return imageinfoarr

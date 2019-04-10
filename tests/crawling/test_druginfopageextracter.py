@@ -191,6 +191,12 @@ def valid_url_mock_returns_valid_content(url: str, request: requests.Request):
     return {'status_code': 200, 'content': compatibilityhtml}
 
 
+VALIDSCHEMEIMG, VALIDNETLOCIMG, VALIDPATHIMG, _, VALIDQUERYIMG, _ = urlparse('http://pro.medicin.dk/resource/media/NP4W2MUH?ptype=1')
+@httmock.urlmatch(scheme=VALIDSCHEMEIMG, netloc=VALIDNETLOCIMG, path=VALIDPATHIMG, query=VALIDQUERYIMG)
+def valid_image_url(url: str, request: requests.Request):
+    return {'status_code': 200, 'content': 'something'}
+
+
 soup = bs4.BeautifulSoup(imagehtml, 'html.parser')
 plastersoup = bs4.BeautifulSoup(plasterhtml, 'html.parser')
 headersoup = bs4.BeautifulSoup(headerhtml, 'html.parser')
@@ -200,8 +206,9 @@ compatibilitysoup = bs4.BeautifulSoup(compatibilityhtml, 'html.parser')
 
 
 def test_extractimagesourcefrombs4():
-    result = druginfopageextracter._getpillimage(soup)
-    assert result == ['/resource/media/NP4W2MUH?ptype=1']
+    with httmock.HTTMock(valid_image_url):
+        result = druginfopageextracter._getpillimage(soup)
+    assert result == [b'c29tZXRoaW5n']
 
 
 def test_extractkindandstrengthfrombs4():
@@ -244,11 +251,12 @@ def test__getphotoidentification_nopillorcapsule():
 
 
 def test__getphotoidentification_withpillorcapsule():
-    result = druginfopageextracter._getphotoidentification(soup)
+    with httmock.HTTMock(valid_image_url):
+        result = druginfopageextracter._getphotoidentification(soup)
     dataeq = PhotoIdentification(**{
         'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
         'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
-        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+        'imageEncoding': [b'c29tZXRoaW5n']
     })
     
     assert len(result) == 1
@@ -298,7 +306,7 @@ def test__getpilldata_withvalidinput():
     dataeq = PillData("Actiq\\asd", "Fentanyl", PhotoIdentification(**{
         'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
         'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
-        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+        'imageEncoding': ['/resource/media/NP4W2MUH?ptype=1']
     }))
     assert result.pillname == dataeq.pillname
     assert result.substance == dataeq.substance
@@ -326,7 +334,7 @@ def test_getdata_valid_data(caplog):
     data = PillData("Actiq\\asd", "Fentanyl", PhotoIdentification(**{
         'kind': 'Tabletter', 'strength': '5 mg', 'imprint': ['A-007', '5'], 
         'score': 'Ingen kærv', 'colour': ['Blå'], 'sizeDimensions': '4,6 x 8,2', 
-        'imageUrl': ['/resource/media/NP4W2MUH?ptype=1']
+        'imageEncoding': ['/resource/media/NP4W2MUH?ptype=1']
     }))
     with httmock.HTTMock(valid_url_mock_returns_valid_content):
         result = list(druginfopageextracter.getdata(['http://mockurl.valid/']))
