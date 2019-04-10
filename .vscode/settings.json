@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/dennis/.virtualenvs/MedID-Crawler/bin/python",
+    "python.pythonPath": "/usr/local/bin/python3",
     "python.linting.prospectorEnabled": true
 }
