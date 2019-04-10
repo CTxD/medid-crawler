@@ -112,14 +112,16 @@ def crawl(url: str) -> bs4.BeautifulSoup:
 
 
 def get_image_byte64_encoding(relative_url: str):
-    # IMPORTANT!
-    # URL that we receive misses http://pro.medicin.dk
+    """
+    If you provide an invalid url for, the function returns None.
 
-    # TO DECODE:
+    Quick-tip:
+    To decode image;
     # imgdata = base64.b64decode(imgstring)
     # filename = 'some_image.jpg'
     # with open(filename, 'wb') as f:
     #     f.write(imgdata)
+    """
 
     img_url = "http://pro.medicin.dk" + relative_url
 
@@ -127,4 +129,9 @@ def get_image_byte64_encoding(relative_url: str):
     if delta > 0:  # pragma: no cover
         time.sleep(delta)
 
-    return base64.b64encode(requests.get(img_url).content)
+    r = requests.get(img_url)
+
+    if r.status_code != 200:
+        return None
+
+    return base64.b64encode(r.content)
