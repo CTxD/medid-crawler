@@ -11,8 +11,7 @@ def _getpilldata(soup):
     if _ismedicincompatible(soup):
         pillname = _getpillname(soup)
         substance = _getpillsubstance(soup)
-        photoinfo = _getphotoidentification(soup)
-       
+        photoinfo = _getphotoidentification(soup)   
         return pill.PillData(pillname, substance, photoinfo)
     return None
     

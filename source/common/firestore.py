@@ -1,6 +1,5 @@
 import os
 import logging
-import inspect
 
 from firebase_admin import credentials, firestore, initialize_app
 
@@ -31,7 +30,7 @@ class FBManager:
             if isinstance(value, list):
                 newattrvalue = []
                 for oldvalue in value:
-                    if isinstance(oldvalue, (str, int, float, bool)):
+                    if isinstance(oldvalue, (str, int, float, bool, bytes)):
                         newattrvalue.append(oldvalue)
                     else:
                         newattrvalue.append(self._convert_obj_to_dict(oldvalue))

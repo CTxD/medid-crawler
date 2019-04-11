@@ -2,13 +2,9 @@
 Wrapper for starting a crawling iteration.
 """
 import logging
-from typing import List
-
+import source.common.firestore as fs
 from . import druglistextractor
 from . import druginfopageextracter
-# rom . import druginfopageextracter
-from source.common.firestore import FBManager
-from source.crawling.pill import PillData
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +14,7 @@ logger = logging.getLogger(__name__)
 def start(): # pragma: no cover
     # 1. Get the list of drugs
     druglistdict = druglistextractor.getdruglinklist()
-    pilldatabase = FBManager()
+    pilldatabase = fs.FBManager()
     # 2. Give the list of drugs to the druginfoextractor and
     # 3. Feed the database with drugs from (above)
     logger.info('Getting drug info')
@@ -26,10 +22,7 @@ def start(): # pragma: no cover
         if druglinklist is None:
             continue
         
-        for druginfo in druginfopageextracter.getdata(druglinklist):
-
-        # logger.info(f'Drug info for letter {letter}: {len(druginfoforletter)}')
-            logger.info('Finished getting pilldata for ' + druginfo.pillname)
+        for druginfo in druginfopageextracter.getdata(druglinklist[0:3]):
+            logger.info('Finished getting pilldata for ' + druginfo.pillname) # noqa
             pilldatabase.add_or_update("pills", druginfo)
         break
-
