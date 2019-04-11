@@ -178,6 +178,12 @@ kindhtml = """
             </td>
 """
 
+
+invalidimagehtml = """
+<img class="glob-ident-row-image alignLeft vertAlignTop" src="/resource/media/NP4W2MUH?ptype=1" alt="Vi har desværre pt. ikke et foto af denne dispenseringsform og styrke">
+"""
+
+
 VALIDSCHEME, VALIDNETLOC, VALIDPATH, _, VALIDQUERY, _ = urlparse('http://mockurl.valid/')
 
 
@@ -203,12 +209,18 @@ headersoup = bs4.BeautifulSoup(headerhtml, 'html.parser')
 imprintsoup = bs4.BeautifulSoup(imprintimagehtml, 'html.parser')
 kindsoup = bs4.BeautifulSoup(kindhtml, 'html.parser')
 compatibilitysoup = bs4.BeautifulSoup(compatibilityhtml, 'html.parser')
+invalidimagesoup = bs4.BeautifulSoup(invalidimagehtml, 'html.parser')
 
 
-def test_extractimagesourcefrombs4():
+def test__getpillimage_with_valid_image():
     with httmock.HTTMock(valid_image_url):
         result = druginfopageextracter._getpillimage(soup)
     assert result == [b'c29tZXRoaW5n']
+
+
+def test__getpillimage_with_invalid_image():
+    result = druginfopageextracter._getpillimage(invalidimagesoup)
+    assert result == [None]
 
 
 def test_extractkindandstrengthfrombs4():

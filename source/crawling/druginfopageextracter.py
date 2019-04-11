@@ -80,11 +80,15 @@ def _getpillkindandstrength(photoinfo):
 def _getpillimage(photoinfo):
     # iterates over all images and gets the images of the pills
     classname = 'glob-ident-row-image alignLeft vertAlignTop'
+    noimage = 'Vi har desværre pt. ikke et foto af denne dispenseringsform og styrke'
     imagearr = []
     for pillphoto in photoinfo.find_all('img', attrs={classname}):
-        encoding = crawler.get_image_byte64_encoding(pillphoto['src'])
-        if encoding is not None:
-            imagearr.append(encoding)
+        if pillphoto['alt'] == noimage:
+            imagearr.append(None)
+        else:
+            encoding = crawler.get_image_byte64_encoding(pillphoto['src'])
+            if encoding is not None:
+                imagearr.append(encoding)
     return imagearr
 
 
