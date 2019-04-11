@@ -17,7 +17,7 @@ def getdruglinklist() -> Dict[str, Union[List[str], None]]:
     letterdict: Dict[str, Union[List[str], None]] = {}
     
     # Iterate letters from a-z
-    for letter in ["a"]:
+    for letter in ascii_lowercase:
         links = _extractdruglinksbyletter(letter)
         # If a list of links is returned, we cast it to set and back to list in order to remove any
         # duplicate links.
