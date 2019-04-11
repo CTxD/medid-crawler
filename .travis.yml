@@ -1,13 +1,11 @@
 sudo: false
 language: python
 python: 
-  - "2.7"
-  - "3.4" 
+  - "3.6" 
 install:
   - make install
   - pip install codecov
-virtualenv:
-  system_site_packages: true
+
 script: make test
 after_success:
   - codecov

@@ -12,7 +12,7 @@
 ## Example of structure:
 ```
 ├─ source
-|   └─ myPackage
+|   └─  
 |       └─ __init__.py
 |       └─ foo.py
 |       └─ bar.py
