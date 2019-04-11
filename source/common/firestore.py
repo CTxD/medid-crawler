@@ -19,23 +19,32 @@ class FBManager:
 
     def _convert_obj_to_dict(self, obj):
         class_dict = {}
-        for attr in dir(obj):
-            if attr.startswith('__'):
-                continue
 
-            attrvalue = getattr(obj, attr)
+        def parsekeyvalue(key, value):
+            if key.startswith('__'):
+                return None
 
-            if callable(attrvalue):
-                continue
+            if callable(value):
+                return None
 
-            if isinstance(attrvalue, list):
+            if isinstance(value, list):
                 newattrvalue = []
-                for oldvalue in attrvalue:
-                    newattrvalue.append(self._convert_obj_to_dict(oldvalue))
+                for oldvalue in value:
+                    if isinstance(oldvalue, (str, int, float, bool, bytes)):
+                        newattrvalue.append(oldvalue)
+                    else:
+                        newattrvalue.append(self._convert_obj_to_dict(oldvalue))
 
-                attrvalue = newattrvalue
+                value = newattrvalue
 
-            class_dict[attr] = attrvalue
+            return value
+        
+        for attr in dir(obj):
+            value = parsekeyvalue(attr, getattr(obj, attr))
+            if value is None:
+                continue
+
+            class_dict[attr] = value
 
         return class_dict
 
