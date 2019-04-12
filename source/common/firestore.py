@@ -1,5 +1,7 @@
 import os
 import logging
+import time 
+from typing import Dict
 
 from firebase_admin import credentials, firestore, initialize_app
 
@@ -57,3 +59,6 @@ class FBManager:
 
     def get_all(self, collection_id: str):
         return self.db.collection(collection_id).get()
+
+    def update_crawling_meta(self, obj: Dict):
+        self.db.collection('crawls').document(str(int(time.time()))).set(obj)

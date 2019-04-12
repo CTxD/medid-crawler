@@ -2,6 +2,7 @@
 import os
 import uuid
 import json
+import time 
 
 import mockfirestore
 
@@ -209,3 +210,17 @@ def test_get_all_pills():
     mock_data()
     pills = fbm.get_all("Pills")
     assert len(pills) == 2
+
+
+def test_update_crawling_meta():
+    crawling_data = {
+        'links_by_letter': {'a': 22, 'b': 42},
+        'drugs_by_letter': {'a': 21, 'b': 38}
+    }
+    intime = str(int(time.time()))
+    fbm.update_crawling_meta(crawling_data)
+
+    stored_data = fbm.db.collection('crawls').document(intime).get().to_dict()
+
+    assert stored_data['links_by_letter'] == {'a': 22, 'b': 42}
+    assert stored_data['drugs_by_letter'] == {'a': 21, 'b': 38}

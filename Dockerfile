@@ -10,7 +10,8 @@ RUN apt-get update
 RUN apt-get -y install python3.7
 RUN apt-get -y install python3-pip
 
-RUN pip3 install -r requirements/dev
-RUN python3 install.py
+RUN cp config.cfg.example config.cfg
 
-CMD ["python3", "main.py"]
+RUN make install
+
+CMD ["make", "main"]

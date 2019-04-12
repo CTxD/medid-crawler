@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import socket
 
 from typing import Union
 
@@ -54,12 +55,67 @@ def checkrequirements() -> bool:
 
 
 def checkconnection() -> bool:
-    # Access to DB instance?
-    printstatus('Connection to DB instance')
-    status = True
-    printstatus(status)
+    # Connectivity check implementation is heavily inspired by the following SO answer:
+    # https://stackoverflow.com/a/33117579
 
+    printstatus('Checking internet connection')
+    status = True
+    try:
+      socket.setdefaulttimeout(5)
+      socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(("8.8.8.8", 53))
+    except Exception:
+        status = False
+
+    printstatus(status)
     return status
+
+
+def checkcertificate() -> bool:
+    from source.config import CONFIG
+    # Access to DB instance?
+    printstatus('Checking Firebase certificate')
+
+    certificate_path = 'CERT' in CONFIG
+    if not certificate_path:
+        printstatus(False)
+        print(
+            f'\r\nNo CERT path has been defined in the config.cfg file. Please make sure a CERT '
+            'entry exists, either globally or for the current environment.'
+        )
+        return False
+    
+    certpath = os.path.join(os.getcwd(), CONFIG["CERT"])
+    certificate_exists = os.path.exists(certpath)
+    if not certificate_exists:
+        printstatus(False)
+        print(
+            f'\r\nNo certificate exists in the path "{certpath}". Make sure the path to the '
+            'certificate is valid.'
+        )
+        return False
+    
+    try:
+        from firebase_admin import credentials
+        credentials.Certificate(certpath)
+    except ImportError:
+        printstatus(False)
+        print(
+            f'\r\nCould not import firebase_admin package. This is unexpected; please install the '
+            f'package manually with command: \r\n\tpip3 install --force-reinstall firebase-admin'
+        )
+        return False
+    except ValueError:
+        printstatus(False)
+        print(f'\r\nThe certificate at {certpath} is not a valid Firebase certificate.')
+        return False
+    except Exception:
+        printstatus(False)
+        print('Unexpected failure in resolving the certificate dependency.')
+        return False
+
+    printstatus(True)
+
+    return True
 
 
 def checkconfig() -> bool:
@@ -91,7 +147,7 @@ def resolvedependencies() -> bool:
 
     config.readconfig('config.cfg')
 
-    if not checkrequirements() or not checkconnection():
+    if not checkrequirements() or not checkconnection() or not checkcertificate():
         return False
 
     return True
@@ -102,7 +158,7 @@ def printstatus(status: Union[str, bool]):
     if isinstance(status, str):
         message = "{:<40}".format(status+'...')
     else:
-        message = 'OK!' if status is True else 'Failed'
+        message = "\033[92m OK!\033[00m" if status is True else "\033[91m Failed\033[00m"
         message = message + '\r\n'
 
     sys.stdout.write(message)

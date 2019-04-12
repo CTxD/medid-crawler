@@ -25,6 +25,7 @@ def getdruglinklist() -> Dict[str, Union[List[str], None]]:
         logger.info(
             f'Links for letter {letter}: {len(letterdict[letter]) if letterdict[letter] else "None"}' # type: ignore # noqa
         )
+        
     # Prepare a log message according to the results getting the drug link list
     loghandler = logger.info
     total = 0
