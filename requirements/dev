@@ -2,3 +2,9 @@
 # Development specific requirements:
 # Linters:
 prospector[with_mypy]
+pytest
+pytest-cov
+pytest-mock
+mock
+mock-firestore
+httmock

@@ -5,6 +5,7 @@ python:
   - "3.7" 
 install:
   - cp config.cfg.example config.cfg
+  - pip install -r requirements/dev
   - make install
   - pip install codecov
 

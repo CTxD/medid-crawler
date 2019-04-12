@@ -1,12 +1,5 @@
 # All common requirements for the project:
 # urllib3
-pytest
-pytest-cov
-pytest-mock
-mock
-mock-firestore
-httmock
-
 beautifulsoup4
 requests
 firebase-admin
