@@ -48,14 +48,9 @@ POLITENESS      = 5
 # ENVIRONMENTSPECIFIC specifies variables for specific environments
 # Keys must be on the form <PROD|DEV>_KEYNAME.
 
-# Host (IP) and port to DB instance
-PROD_HOST       = 192.168.99.100
-PROD_PORT       = 27017
-DEV_HOST        = 127.0.0.1
-DEV_PORT        = 27017
-
 # Requirements file path
 PROD_REQPATH    = requirements/prod
 DEV_REQPATH     = requirements/dev
 
-
+DEV_CERT        = medid-certificate.json
+PROD_CERT       = medid-production-certificate.json

@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": ".env/bin/python",
+    "python.pythonPath": "/home/dennis/.virtualenvs/medid-crawler/bin/python",
     "python.linting.prospectorEnabled": true
 }

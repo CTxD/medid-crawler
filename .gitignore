@@ -88,11 +88,15 @@
 # mypy
 **/.mypy_cache/
 
-# certificate
-*.json
+# certificates
+*certificate.json
 
 *.DS_Store
 **/.DS_Store
 
 *.idea
 **/.idea
+
+
+config.cfg
+!config.cfg.example

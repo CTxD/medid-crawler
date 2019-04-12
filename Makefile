@@ -2,7 +2,7 @@ test:
 	pytest -v --cov=source tests/ --cov-report term --cov-report html --show-capture=no
 
 install:
-	python install.py
+	python3 install.py
 
 main:
-	python main.py
+	python3 main.py
