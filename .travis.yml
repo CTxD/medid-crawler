@@ -3,9 +3,9 @@ language: python
 python: 
   - "3.6" 
 install:
+  - cp config.cfg.example config.cfg
   - make install
   - pip install codecov
-  - cp config.cfg.example config.cfg
 
 script: make test
 after_success:
