@@ -23,14 +23,11 @@ def _ismedicincompatible(soup):
         isitapill = isitapill.h4.text.lower()
         # Checks if it is a tablet or a kapsle
         if 'tablet' in isitapill or 'kapsle' in isitapill:
-            print("it is a tablet or a kapsle")
             substanceclassname = 'SpaceBtm IndholdsstofferHeaderLinks'
             substance = soup.find('div', attrs={'class': substanceclassname}).b.text
             if substance is not None:
-                print("in substance if")
                 return True
     except Exception:
-        print("it is not a tablet or a kapsle")
         return False
     return False
 

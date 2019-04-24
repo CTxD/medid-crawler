@@ -25,7 +25,7 @@ def start(): # pragma: no cover
         if druglinklist is None:
             continue
 
-        for druginfo in druginfopageextracter.getdata(druglinklist[:10]):
+        for druginfo in druginfopageextracter.getdata(druglinklist):
             logger.info('Finished getting pilldata for ' + druginfo.pillname) # noqa
             pilldatabase.add_or_update("pills", druginfo)
             successesbyletter[letter] += 1
